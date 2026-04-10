@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Granada Industriales – Flota</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --border: #252a38;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --accent: #f59e0b;
+    --red: #ef4444;
+    --red-bg: #2d1515;
+    --green: #22c55e;
+    --green-bg: #122d1a;
+    --yellow: #f59e0b;
+    --yellow-bg: #2d2010;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    padding: 20px 16px 60px;
+  }
+  header {
+    display: flex; align-items: flex-end; gap: 16px;
+    margin-bottom: 28px; border-bottom: 1px solid var(--border);
+    padding-bottom: 16px; flex-wrap: wrap;
+  }
+  .logo { font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: 2px; color: var(--accent); line-height: 1; }
+  .logo span { color: var(--muted); font-weight: 400; }
+  .subtitle { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .today-badge { margin-left: auto; font-size: 11px; color: var(--muted); text-align: right; }
+
+  .summary { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 14px; display: flex; flex-direction: column; gap: 1px; min-width: 80px; }
+  .summary-card .val { font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700; line-height: 1; }
+  .summary-card .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .summary-card.red-card .val { color: var(--red); }
+  .summary-card.yellow-card .val { color: var(--yellow); }
+  .summary-card.green-card .val { color: var(--green); }
+
+  .legend { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); text-transform: uppercase; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dot.red { background: var(--red); }
+  .dot.yellow { background: var(--yellow); }
+  .dot.green { background: var(--green); }
+
+  .vehicles { display: flex; flex-direction: column; gap: 14px; }
+
+  .vehicle-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    transition: border-color 0.2s;
+  }
+  .vehicle-card.has-urgent { border-color: var(--red); }
+  .vehicle-card.has-warn   { border-color: var(--yellow); }
+
+  .card-header {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 14px;
+  }
+  .mat-input {
+    background: transparent; border: none;
+    color: var(--text); font-family: 'Rajdhani', sans-serif;
+    font-size: 22px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; outline: none; width: 160px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+  }
+  .mat-input:focus { border-bottom-color: var(--accent); }
+
+  .card-badges { display: flex; align-items: center; gap: 8px; }
+  .card-status { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 2px 8px; border-radius: 3px; }
+  .card-status.urgent { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+  .card-status.warn   { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow); }
+  .card-status.ok     { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+
+  .delete-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 4px; transition: color 0.15s; }
+  .delete-btn:hover { color: var(--red); }
+
+  .card-fields { display: flex; flex-direction: column; gap: 10px; }
+  .field-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .field-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; min-width: 90px; }
+
+  .field-value { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; }
+
+  .date-input {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; padding: 6px 8px; border-radius: 5px;
+    outline: none; transition: border 0.15s;
+    -webkit-appearance: none;
+  }
+  .date-input:focus { border-color: var(--accent); }
+  .date-input.s-red    { border-color: var(--red);    color: var(--red);    background: var(--red-bg); }
+  .date-input.s-yellow { border-color: var(--yellow); color: var(--yellow); background: var(--yellow-bg); }
+  .date-input.s-done   { border-color: var(--green);  color: var(--green);  background: var(--green-bg); }
+
+  .km-input {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; padding: 6px 8px; border-radius: 5px;
+    outline: none; width: 120px; transition: border 0.15s;
+  }
+  .km-input:focus { border-color: var(--accent); }
+  .km-input.s-red    { border-color: var(--red);    color: var(--red);    background: var(--red-bg); }
+  .km-input.s-yellow { border-color: var(--yellow); color: var(--yellow); background: var(--yellow-bg); }
+
+  .days-label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .days-label.urgent { color: var(--red); font-weight: 600; }
+  .days-label.warn   { color: var(--yellow); }
+  .days-label.ok-g   { color: var(--green); }
+
+  .btn {
+    padding: 4px 8px; border-radius: 3px;
+    font-size: 10px; font-family: 'IBM Plex Mono', monospace;
+    cursor: pointer; border: 1px solid;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .btn.done-btn { color: var(--green); border-color: var(--green); background: transparent; }
+  .btn.done-btn:hover { background: var(--green-bg); }
+  .btn.undo-btn { color: var(--muted); border-color: var(--border); background: transparent; }
+  .btn.undo-btn:hover { color: var(--red); border-color: var(--red); }
+
+  .add-vehicle-btn {
+    width: 100%; padding: 12px;
+    background: transparent; border: 1px dashed var(--border);
+    color: var(--muted); font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; border-radius: 8px; cursor: pointer;
+    letter-spacing: 1px; text-transform: uppercase;
+    transition: all 0.2s; margin-top: 4px;
+  }
+  .add-vehicle-btn:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">GRANADA <span>INDUSTRIALES</span></div>
+    <div class="subtitle">Control de Flota · ITV · Tacógrafo · Revisión km</div>
+  </div>
+  <div class="today-badge" id="today-badge"></div>
+</header>
+
+<div class="summary" id="summary"></div>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot red"></div> Urgente / vencida</div>
+  <div class="legend-item"><div class="dot yellow"></div> Próxima</div>
+  <div class="legend-item"><div class="dot green"></div> OK / pasada</div>
+</div>
+
+<div class="vehicles" id="vehicles"></div>
+<button class="add-vehicle-btn" onclick="addVehicle()" style="margin-top:16px">+ Añadir vehículo</button>
+
+<script>
+const KEY = "granada_v3";
+const WARN_KM = 5000;
+const RED_KM  = 1000;
+
+const DEFAULTS = [
+  { id:1, mat:"9574JZY",  itv:"2026-07-04", taco:"2027-06-26", km:"", nextrev:"" },
+  { id:2, mat:"8733DNG",  itv:"2026-05-08", taco:"2028-01-15", km:"", nextrev:"" },
+  { id:3, mat:"3855FMW",  itv:"2026-04-25", taco:"2027-08-28", km:"", nextrev:"" },
+  { id:4, mat:"7907BVD",  itv:"2026-05-13", taco:"2026-05-20", km:"", nextrev:"" },
+  { id:5, mat:"1136NJX",  itv:"2027-01-16", taco:"2028-01-22", km:"", nextrev:"" },
+  { id:6, mat:"5050NJX",  itv:"2027-01-19", taco:"2028-01-22", km:"", nextrev:"" },
+  { id:7, mat:"5096NJX",  itv:"2027-01-19", taco:"2028-01-22", km:"", nextrev:"" },
+  { id:8, mat:"R0323BCK", itv:"2026-05-25", taco:"",           km:"", nextrev:"" },
+  { id:9, mat:"R0948BCF", itv:"2026-07-09", taco:"",           km:"", nextrev:"" },
+];
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY));
+    return d && d.vehicles ? d : { vehicles: JSON.parse(JSON.stringify(DEFAULTS)), done:{}, nextId:10 };
+  } catch { return { vehicles: JSON.parse(JSON.stringify(DEFAULTS)), done:{}, nextId:10 }; }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+
+let state = load();
+
+function today() { const d = new Date(); d.setHours(0,0,0,0); return d; }
+function diffDays(ds) {
+  if (!ds) return null;
+  const d = new Date(ds); d.setHours(0,0,0,0);
+  return Math.round((d - today()) / 86400000);
+}
+
+function dateStatus(ds, dk) {
+  if (state.done[dk]) return "done";
+  if (!ds) return "";
+  const days = diffDays(ds);
+  if (days <= 30) return "red";
+  if (days <= 60) return "yellow";
+  return "ok";
+}
+
+function daysText(ds, dk) {
+  if (state.done[dk]) return `<span class="days-label ok-g">✓ pasada</span>`;
+  if (!ds) return "";
+  const days = diffDays(ds);
+  if (days < 0)  return `<span class="days-label urgent">VENCIDA ${Math.abs(days)}d</span>`;
+  if (days===0)  return `<span class="days-label urgent">HOY</span>`;
+  if (days<=30)  return `<span class="days-label urgent">en ${days}d</span>`;
+  if (days<=60)  return `<span class="days-label warn">en ${days}d</span>`;
+  return `<span class="days-label">${days}d</span>`;
+}
+
+function kmClass(km, next) {
+  if (!km || !next) return "";
+  const diff = parseInt(next) - parseInt(km);
+  if (diff <= RED_KM)  return "s-red";
+  if (diff <= WARN_KM) return "s-yellow";
+  return "";
+}
+
+function kmText(km, next) {
+  if (!km || !next) return "";
+  const diff = parseInt(next) - parseInt(km);
+  if (diff <= 0)      return `<span class="days-label urgent">VENCIDA ${Math.abs(diff).toLocaleString()}km</span>`;
+  if (diff<=RED_KM)   return `<span class="days-label urgent">faltan ${diff.toLocaleString()}km</span>`;
+  if (diff<=WARN_KM)  return `<span class="days-label warn">faltan ${diff.toLocaleString()}km</span>`;
+  return `<span class="days-label">faltan ${diff.toLocaleString()}km</span>`;
+}
+
+function cardClass(v) {
+  const iS = dateStatus(v.itv,  "itv_" +v.id);
+  const tS = dateStatus(v.taco, "taco_"+v.id);
+  const kC = kmClass(v.km, v.nextrev);
+  if (iS==="red"||tS==="red"||kC==="s-red")       return "has-urgent";
+  if (iS==="yellow"||tS==="yellow"||kC==="s-yellow") return "has-warn";
+  return "";
+}
+
+function statusBadge(v) {
+  const c = cardClass(v);
+  if (c==="has-urgent") return `<span class="card-status urgent">URGENTE</span>`;
+  if (c==="has-warn")   return `<span class="card-status warn">PRÓXIMA</span>`;
+  return `<span class="card-status ok">OK</span>`;
+}
+
+function render() {
+  const cont = document.getElementById("vehicles");
+  cont.innerHTML = "";
+  let urgent=0, warn=0, green=0;
+
+  state.vehicles.forEach(v => {
+    const idk = "itv_" +v.id;
+    const tdk = "taco_"+v.id;
+    const iS  = dateStatus(v.itv,  idk);
+    const tS  = dateStatus(v.taco, tdk);
+    const kC  = kmClass(v.km, v.nextrev);
+    const cc  = cardClass(v);
+
+    if (cc==="has-urgent") urgent++;
+    else if (cc==="has-warn") warn++;
+    if (state.done[idk]) green++;
+    if (state.done[tdk]) green++;
+
+    const iBtn = v.itv
+      ? (state.done[idk]
+        ? `<button class="btn undo-btn" onclick="toggleDone('${idk}')">↩ pendiente</button>`
+        : `<button class="btn done-btn" onclick="toggleDone('${idk}')">✓ pasada</button>`) : "";
+    const tBtn = v.taco
+      ? (state.done[tdk]
+        ? `<button class="btn undo-btn" onclick="toggleDone('${tdk}')">↩ pendiente</button>`
+        : `<button class="btn done-btn" onclick="toggleDone('${tdk}')">✓ pasada</button>`) : "";
+
+    cont.innerHTML += `
+    <div class="vehicle-card ${cc}">
+      <div class="card-header">
+        <input class="mat-input" value="${v.mat}" placeholder="Matrícula"
+          onchange="updateField(${v.id},'mat',this.value)">
+        <div class="card-badges">
+          ${statusBadge(v)}
+          <button class="delete-btn" onclick="deleteVehicle(${v.id})">🗑</button>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field-row">
+          <div class="field-label">ITV</div>
+          <div class="field-value">
+            <input type="date" class="date-input s-${iS}" value="${v.itv||''}"
+              onchange="updateField(${v.id},'itv',this.value)">
+            ${daysText(v.itv, idk)} ${iBtn}
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Tacógrafo</div>
+          <div class="field-value">
+            <input type="date" class="date-input s-${tS}" value="${v.taco||''}"
+              onchange="updateField(${v.id},'taco',this.value)">
+            ${daysText(v.taco, tdk)} ${tBtn}
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Km actuales</div>
+          <div class="field-value">
+            <input type="number" class="km-input ${kC}" placeholder="km actuales"
+              value="${v.km}" inputmode="numeric"
+              onchange="updateField(${v.id},'km',this.value)">
+            ${kmText(v.km, v.nextrev)}
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Próx. revisión</div>
+          <div class="field-value">
+            <input type="number" class="km-input" placeholder="km revisión"
+              value="${v.nextrev}" inputmode="numeric"
+              onchange="updateField(${v.id},'nextrev',this.value)">
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById("summary").innerHTML = `
+    <div class="summary-card red-card"><div class="val">${urgent}</div><div class="lbl">Urgentes</div></div>
+    <div class="summary-card yellow-card"><div class="val">${warn}</div><div class="lbl">Próximas</div></div>
+    <div class="summary-card green-card"><div class="val">${green}</div><div class="lbl">Pasadas ✓</div></div>
+  `;
+
+  document.getElementById("today-badge").textContent =
+    today().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+}
+
+function updateField(id, field, val) {
+  const v = state.vehicles.find(x=>x.id===id);
+  if (v) { v[field]=val; save(); render(); }
+}
+function toggleDone(key) {
+  if (state.done[key]) delete state.done[key]; else state.done[key]=true;
+  save(); render();
+}
+function addVehicle() {
+  state.vehicles.push({id:state.nextId++, mat:"NUEVA", itv:"", taco:"", km:"", nextrev:""});
+  save(); render();
+}
+function deleteVehicle(id) {
+  if (!confirm("¿Eliminar este vehículo?")) return;
+  state.vehicles = state.vehicles.filter(v=>v.id!==id);
+  save(); render();
+}
+
+render();
+</script>
+</body>
+</html>
