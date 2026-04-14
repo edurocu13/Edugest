@@ -354,7 +354,18 @@ function deleteVehicle(id) {
   state.vehicles = state.vehicles.filter(v=>v.id!==id);
   save(); render();
 }
+function exportData() {
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
 
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "copia_flota.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
 render();
 </script>
 </body>
